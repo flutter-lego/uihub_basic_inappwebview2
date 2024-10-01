@@ -1,7 +1,7 @@
 name: uihub_basic_inappwebview2
 description: "free flutter ui is all you need"
 #publish_to: 'none'
-#repository: https://github.com/flutter-uihub/_new
+repository: https://github.com/flutter-uihub/uihub_basic_inappwebview2
 
 version: 1.0.0
 
