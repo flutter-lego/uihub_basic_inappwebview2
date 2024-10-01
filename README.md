@@ -12,6 +12,11 @@
    ```bash
    npm install -g uihub-cli@latest
    uihub get uihub_basic_inappwebview2
+   dart pub add after_layout
+   dart pub add flutter_inappwebview
+   dart pub add gap
+   dart pub add share_plus
+   dart pub add styled_widget
    ```
 
 2. if build on web, add this line in `web/index.html` inside the `<head>` tag.
