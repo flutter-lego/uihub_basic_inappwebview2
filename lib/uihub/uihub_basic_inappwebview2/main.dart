@@ -132,131 +132,138 @@ class _NewViewState extends State<NewView> with AfterLayoutMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        titleSpacing: 0.0,
-        title: SizedBox(
-          height: 40.0,
-          child: Stack(
-            children: <Widget>[
-              TextField(
-                onTap: () => _searchController.selection = TextSelection(baseOffset: 0, extentOffset: _searchController.text.length),
-                onSubmitted: _handleSubmitted,
-                keyboardType: TextInputType.url,
-                autofocus: false,
-                controller: _searchController,  // 주소창과 컨트롤러 연결
-                textInputAction: TextInputAction.go,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.only(
-                      left: 45.0, top: 0.0, right: 10.0, bottom: 0.0),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: outlineBorder,
-                  focusedBorder: outlineBorder,
-                  enabledBorder: outlineBorder,
-                  hintText: "Search for or type a web address",
-                  hintStyle:
-                  const TextStyle(color: Colors.black54, fontSize: 16.0),
-                ),
-                style: const TextStyle(color: Colors.black, fontSize: 16.0),
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.ios_share_outlined,
-                  size: 20,
-                ).opacity(0.7),
-                onPressed: () async {
-                  if (url.isNotEmpty) {
-                    await Share.share('$url');
-                  }
-                },
-              ),
-            ],
-          ),
-        ).padding(left: 12, right: 10),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.arrow_back, color: canGoBack ? Colors.white : Colors.grey, size: 30),
-            onPressed: canGoBack
-                ? () async {
-              if (await webViewController?.canGoBack() ?? false) {
-                webViewController?.goBack();
-              }
-            }
-                : null,
-          ),
-          IconButton(
-            icon: Icon(Icons.arrow_forward, color: canGoForward ? Colors.white : Colors.grey, size: 30),
-            onPressed: canGoForward
-                ? () async {
-              if (await webViewController?.canGoForward() ?? false) {
-                webViewController?.goForward();
-              }
-            }
-                : null,
-          ),
-          Gap(10),
-        ],
+    return TextSelectionTheme(
+      data: TextSelectionThemeData(
+        cursorColor: Colors.blue, // 커서 색상
+        selectionColor: Colors.blue.withOpacity(0.3), // 선택 영역 색상
+        selectionHandleColor: Colors.blue, // 선택 핸들 색상
       ),
-      body: Column(
-        children: [
-          InAppWebView(
-            initialUrlRequest:
-            URLRequest(url: WebUri('https://docs.flutter.dev')),
-            initialSettings: settings,
-            contextMenu: contextMenu,
-            pullToRefreshController: pullToRefreshController,
-            onWebViewCreated: (controller) async {
-              webViewController = controller;
-            },
-            onLoadStart: (controller, url) async {
-              // 페이지 로드 시작 시 주소 업데이트
-              print('페이지 로드 시작: $url');
-              setState(() {
-                this.url = _normalizeUrl(url.toString()); // 주소창에서 슬래시 제거
-                _searchController.text = this.url;  // 주소창 업데이트
-              });
-            },
-            onLoadStop: (controller, url) async {
-              pullToRefreshController?.endRefreshing();
-
-              bool canGoBackValue = await (webViewController?.canGoBack() ?? Future.value(false));
-              bool canGoForwardValue = await (webViewController?.canGoForward() ?? Future.value(false));
-
-              setState(() {
-                this.url = _normalizeUrl(url.toString());  // 슬래시 제거된 URL 설정
-                _searchController.text = this.url;  // 주소창 업데이트
-                canGoBack = canGoBackValue;
-                canGoForward = canGoForwardValue;
-              });
-            },
-            onProgressChanged: (controller, progress) {
-              if (progress == 100) {
-                pullToRefreshController?.endRefreshing();
+      child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.background,
+        appBar: AppBar(
+          backgroundColor: Colors.blue,
+          titleSpacing: 0.0,
+          title: SizedBox(
+            height: 40.0,
+            child: Stack(
+              children: <Widget>[
+                TextField(
+                  onTap: () => _searchController.selection = TextSelection(baseOffset: 0, extentOffset: _searchController.text.length),
+                  onSubmitted: _handleSubmitted,
+                  keyboardType: TextInputType.url,
+                  autofocus: false,
+                  controller: _searchController,  // 주소창과 컨트롤러 연결
+                  textInputAction: TextInputAction.go,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.only(
+                        left: 45.0, top: 0.0, right: 10.0, bottom: 0.0),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: outlineBorder,
+                    focusedBorder: outlineBorder,
+                    enabledBorder: outlineBorder,
+                    hintText: "Search for or type a web address",
+                    hintStyle:
+                    const TextStyle(color: Colors.black54, fontSize: 16.0),
+                  ),
+                  style: const TextStyle(color: Colors.black, fontSize: 16.0),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.ios_share_outlined,
+                    size: 20,
+                  ).opacity(0.7),
+                  onPressed: () async {
+                    if (url.isNotEmpty) {
+                      await Share.share('$url');
+                    }
+                  },
+                ),
+              ],
+            ),
+          ).padding(left: 12, right: 10),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.arrow_back, color: canGoBack ? Colors.white : Colors.grey, size: 30),
+              onPressed: canGoBack
+                  ? () async {
+                if (await webViewController?.canGoBack() ?? false) {
+                  webViewController?.goBack();
+                }
               }
-              setState(() {
-                this.progress = progress / 100;
-              });
-            },
-            onUpdateVisitedHistory: (controller, url, isReload) async {
-              // 방문 기록이 업데이트될 때 주소 및 앞으로/뒤로 가기 상태 업데이트
-              bool canGoBackValue = await (webViewController?.canGoBack() ?? Future.value(false));
-              bool canGoForwardValue = await (webViewController?.canGoForward() ?? Future.value(false));
+                  : null,
+            ),
+            IconButton(
+              icon: Icon(Icons.arrow_forward, color: canGoForward ? Colors.white : Colors.grey, size: 30),
+              onPressed: canGoForward
+                  ? () async {
+                if (await webViewController?.canGoForward() ?? false) {
+                  webViewController?.goForward();
+                }
+              }
+                  : null,
+            ),
+            Gap(10),
+          ],
+        ),
+        body: Column(
+          children: [
+            InAppWebView(
+              initialUrlRequest:
+              URLRequest(url: WebUri('https://docs.flutter.dev')),
+              initialSettings: settings,
+              contextMenu: contextMenu,
+              pullToRefreshController: pullToRefreshController,
+              onWebViewCreated: (controller) async {
+                webViewController = controller;
+              },
+              onLoadStart: (controller, url) async {
+                // 페이지 로드 시작 시 주소 업데이트
+                print('페이지 로드 시작: $url');
+                setState(() {
+                  this.url = _normalizeUrl(url.toString()); // 주소창에서 슬래시 제거
+                  _searchController.text = this.url;  // 주소창 업데이트
+                });
+              },
+              onLoadStop: (controller, url) async {
+                pullToRefreshController?.endRefreshing();
 
-              setState(() {
-                this.url = _normalizeUrl(url.toString()); // 슬래시 제거된 URL 설정
-                _searchController.text = this.url;  // 주소창 업데이트
-                canGoBack = canGoBackValue;
-                canGoForward = canGoForwardValue;
-              });
-            },
-            onConsoleMessage: (controller, consoleMessage) {
-              print(consoleMessage);
-            },
-          ).expanded(),
-        ],
+                bool canGoBackValue = await (webViewController?.canGoBack() ?? Future.value(false));
+                bool canGoForwardValue = await (webViewController?.canGoForward() ?? Future.value(false));
+
+                setState(() {
+                  this.url = _normalizeUrl(url.toString());  // 슬래시 제거된 URL 설정
+                  _searchController.text = this.url;  // 주소창 업데이트
+                  canGoBack = canGoBackValue;
+                  canGoForward = canGoForwardValue;
+                });
+              },
+              onProgressChanged: (controller, progress) {
+                if (progress == 100) {
+                  pullToRefreshController?.endRefreshing();
+                }
+                setState(() {
+                  this.progress = progress / 100;
+                });
+              },
+              onUpdateVisitedHistory: (controller, url, isReload) async {
+                // 방문 기록이 업데이트될 때 주소 및 앞으로/뒤로 가기 상태 업데이트
+                bool canGoBackValue = await (webViewController?.canGoBack() ?? Future.value(false));
+                bool canGoForwardValue = await (webViewController?.canGoForward() ?? Future.value(false));
+
+                setState(() {
+                  this.url = _normalizeUrl(url.toString()); // 슬래시 제거된 URL 설정
+                  _searchController.text = this.url;  // 주소창 업데이트
+                  canGoBack = canGoBackValue;
+                  canGoForward = canGoForwardValue;
+                });
+              },
+              onConsoleMessage: (controller, consoleMessage) {
+                print(consoleMessage);
+              },
+            ).expanded(),
+          ],
+        ),
       ),
     );
   }
